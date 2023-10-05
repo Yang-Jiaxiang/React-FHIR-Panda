@@ -117,7 +117,12 @@ function App() {
                 break
             case 'POST':
                 try {
-                    const response = await axios.post(intactURL, { body: inputJson })
+                    const response = await axios.post(intactURL, {
+                        body: inputJson,
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    })
                     success()
                 } catch (e) {
                     error()
