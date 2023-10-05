@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react'
 import QueryUI from './QueryUI/QueryUI'
 import RESOURCES from './Configs/Resources.config.json'
 import axios from 'axios'
+import { Button, message, Space } from 'antd'
 
 import JSONTable from './Component/JSONTable'
 import JSONModal from './Component/JSONModal'
 import { auth as OAuth } from './OAuth/script/oauth_client_credentials'
 function App() {
+    const [messageApi, contextHolder] = message.useMessage()
+
     const urlParams = new URLSearchParams(window.location.search)
     const urlParamsReference = Boolean(urlParams.get('Reference'))
     const urlParamsHistory = Boolean(urlParams.get('history'))
@@ -67,6 +70,25 @@ function App() {
         }
     }
 
+    const success = () => {
+        messageApi.open({
+            type: 'success',
+            content: 'This is a success message',
+        })
+    }
+    const error = () => {
+        messageApi.open({
+            type: 'error',
+            content: 'This is an error message',
+        })
+    }
+    const warning = () => {
+        messageApi.open({
+            type: 'warning',
+            content: 'This is a warning message',
+        })
+    }
+
     const sendRequest = async () => {
         const { HTTP, URLHeader, serverURL, resourceType, id, token, sortBy, pageCount, parameters, headers } = querys
         switch (querys.HTTP) {
@@ -85,10 +107,10 @@ function App() {
                         if (querys.id) data = [{ resource: response.data }]
                         else data = response.data.entry?.length > 0 ? response.data.entry : []
                     }
-
+                    success()
                     setFetchJson(data)
-                    console.log(data)
                 } catch (e) {
+                    error()
                     console.log(e)
                 }
 
@@ -96,8 +118,9 @@ function App() {
             case 'POST':
                 try {
                     const response = await axios.post(intactURL, { body: inputJson })
-                    console.log(response)
+                    success()
                 } catch (e) {
+                    error()
                     console.log(e)
                 }
                 break
@@ -109,8 +132,9 @@ function App() {
                             Authorization: `Bearer ${token}`,
                         },
                     })
-                    console.log(response)
+                    success()
                 } catch (e) {
+                    error()
                     console.log(e)
                 }
                 break
@@ -141,6 +165,7 @@ function App() {
 
     return (
         <div style={{ padding: '1rem' }}>
+            {contextHolder}
             <div>
                 <QueryUI
                     querys={querys}
