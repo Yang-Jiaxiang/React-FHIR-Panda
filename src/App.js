@@ -3,12 +3,17 @@ import QueryUI from './QueryUI/QueryUI'
 import RESOURCES from './Configs/Resources.config.json'
 import axios from 'axios'
 
-import JSONTable from './Components/JSONTable'
-import JSONModal from './Components/JSONModal'
-
+import JSONTable from './Component/JSONTable'
+import JSONModal from './Component/JSONModal'
+import { auth as OAuth } from './OAuth/script/oauth_client_credentials'
 function App() {
     const urlParams = new URLSearchParams(window.location.search)
     const urlParamsReference = Boolean(urlParams.get('Reference'))
+    const urlParamsHistory = Boolean(urlParams.get('history'))
+    const HistoryID = urlParams.get('historyID') || ''
+    const HistoryResourceType = urlParams.get('historyResourceType') || ''
+    const AuthToken = urlParams.get('AuthToken') || ''
+
     const ReferenceResourceType = urlParams.get('ReferenceResourceType') || ''
     const ReferenceID = urlParams.get('ReferenceID') || ''
     const ReferenceServerURL = urlParams.get('ReferenceServerURL') || ''
@@ -16,23 +21,26 @@ function App() {
     const initQuerys = {
         HTTP: 'GET',
         URLHeader: 'https://',
-        serverURL: urlParamsReference ? ReferenceServerURL : 'hapi.fhir.tw/fhir',
-        resourceType: urlParamsReference ? ReferenceResourceType : RESOURCES[0].type,
-        id: urlParamsReference ? ReferenceID : '',
-        token: '',
+        serverURL: urlParamsReference ? ReferenceServerURL : 'hapi.fhir.tw/fhir', //'152.38.3.196:10021/fhir',
+        resourceType: HistoryResourceType
+            ? HistoryResourceType
+            : urlParamsReference
+            ? ReferenceResourceType
+            : RESOURCES[0].type,
+        id: HistoryID ? HistoryID : urlParamsReference ? ReferenceID : '',
+        token: AuthToken ? AuthToken : '',
         sortBy: 'id',
         pageCount: 20,
         parameters: [],
         headers: [],
+        history: urlParamsHistory ? '/_history' : '',
     }
-
     const [querys, setQuerys] = useState(initQuerys)
     const [intactURL, setIntactURL] = useState('')
     const [inputJson, setInputJson] = useState('')
     const [fetchJson, setFetchJson] = useState([])
     const [isModalOpen, setIsModalOpen] = useState(false)
-
-    console.log(fetchJson)
+    const [jsonModal, setJsonModal] = useState({})
 
     useEffect(() => {
         const URL =
@@ -44,29 +52,67 @@ function App() {
                           return `${parameter?.parameter || ''}=${parameter?.value || ''}`
                       })
                       .join('&')}`
-                : '')
+                : '') +
+            querys.history
         setIntactURL(URL)
     }, [querys])
 
     const onReset = () => setQuerys(initQuerys)
+
+    const onHandelOAuth = async () => {
+        let authResult = await OAuth()
+        if (authResult !== false) {
+            setQuerys({ ...querys, token: authResult })
+            console.log('isOG')
+        }
+    }
+
     const sendRequest = async () => {
         const { HTTP, URLHeader, serverURL, resourceType, id, token, sortBy, pageCount, parameters, headers } = querys
         switch (querys.HTTP) {
             case 'GET':
                 try {
-                    const response = await axios.get(intactURL)
+                    const response = await axios.get(intactURL, {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    })
                     let data = []
-                    if (querys.id) data = [{ resource: response.data }]
-                    else data = response.data.entry?.length > 0 ? response.data.entry : []
+
+                    if (urlParamsHistory) {
+                        data = response.data.entry?.length > 0 ? response.data.entry : []
+                    } else {
+                        if (querys.id) data = [{ resource: response.data }]
+                        else data = response.data.entry?.length > 0 ? response.data.entry : []
+                    }
+
                     setFetchJson(data)
+                    console.log(data)
                 } catch (e) {
                     console.log(e)
                 }
 
                 break
             case 'POST':
+                try {
+                    const response = await axios.post(intactURL, { body: inputJson })
+                    console.log(response)
+                } catch (e) {
+                    console.log(e)
+                }
                 break
             case 'PUT':
+                try {
+                    const response = await axios.put(intactURL, {
+                        body: inputJson,
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    })
+                    console.log(response)
+                } catch (e) {
+                    console.log(e)
+                }
                 break
             case 'DELETE':
                 break
@@ -81,6 +127,18 @@ function App() {
         setIsModalOpen(false)
     }
 
+    const changeJSONData = (e) => {
+        setJsonModal(e)
+    }
+
+    const updateInputJson = (e) => {
+        setInputJson(e)
+    }
+
+    const updateQueryData = (e) => {
+        setQuerys({ ...querys, ...e })
+    }
+
     return (
         <div style={{ padding: '1rem' }}>
             <div>
@@ -92,6 +150,7 @@ function App() {
                     setInputJson={setInputJson}
                     sendRequest={sendRequest}
                     intactURL={intactURL}
+                    onHandelOAuth={onHandelOAuth}
                 />
             </div>
             {querys.HTTP === 'GET' && (
@@ -104,12 +163,12 @@ function App() {
                         updateQueryData={updateQueryData}
                         updateInputJson={updateInputJson}
                     />
-                    {/* <JSONModal
-                        json={JSONData}
+                    <JSONModal
+                        json={jsonModal}
                         isModalOpen={isModalOpen}
                         openModal={openModal}
                         closeModal={closeModal}
-                    /> */}
+                    />
                 </div>
             )}
         </div>

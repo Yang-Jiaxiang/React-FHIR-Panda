@@ -7,11 +7,11 @@ import SortBy from '../Component/SortBy'
 import SearchParameterSelector from '../Component/SearchParameterSelector'
 import Token from '../Component/Token'
 
-import { Input, Descriptions, Button, Slider, Space } from 'antd'
+import { Input, Descriptions, Button, Slider, Space, Checkbox } from 'antd'
 import { AlignLeftOutlined } from '@ant-design/icons'
 const { TextArea } = Input
 
-const QueryUI = ({ querys, setQuerys, sendRequest, onReset, inputJson, setInputJson, intactURL }) => {
+const QueryUI = ({ querys, setQuerys, sendRequest, onHandelOAuth, onReset, inputJson, setInputJson, intactURL }) => {
     const formatJSON = () => {
         try {
             const obj = JSON.parse(inputJson)
@@ -36,6 +36,9 @@ const QueryUI = ({ querys, setQuerys, sendRequest, onReset, inputJson, setInputJ
                     </Button>
                     <Button type="primary" danger onClick={onReset}>
                         Reset
+                    </Button>
+                    <Button type="primary" onClick={onHandelOAuth}>
+                        onHandelOAuth
                     </Button>
                 </Space>
             </Descriptions.Item>
@@ -65,7 +68,7 @@ const QueryUI = ({ querys, setQuerys, sendRequest, onReset, inputJson, setInputJ
                             onChange={(value) => setQuerys({ ...querys, pageCount: value })}
                         />
                     </Descriptions.Item>
-                    <Descriptions.Item label="Search Parameters" span={1.5}>
+                    <Descriptions.Item label="Search Parameters" span={1}>
                         <SearchParameterSelector querys={querys} setQuerys={setQuerys} />
                     </Descriptions.Item>
                 </>

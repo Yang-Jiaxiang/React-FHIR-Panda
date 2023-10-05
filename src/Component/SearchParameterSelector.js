@@ -32,6 +32,9 @@ const SearchParameterSelector = ({ querys, setQuerys }) => {
                                     name={[field.name, 'parameter']}
                                 >
                                     <Select placeholder="Select a Parameter" showSearch style={{ minWidth: '10rem' }}>
+                                        <Option value={'id'} key={'id'}>
+                                            id
+                                        </Option>
                                         {options?.map(({ label }) => (
                                             <Option value={label} key={label}>
                                                 {label}

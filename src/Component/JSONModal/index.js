@@ -5,29 +5,25 @@ import ReactJson from 'react-json-view'
 import { DownloadOutlined } from '@ant-design/icons'
 import { Button } from 'antd'
 
-const JSONModal = ({
-    json,
-    isModalOpen,
-    openModal,
-    closeModal,
-}: {
-    json: {} | []
-    isModalOpen: boolean
-    openModal: () => void
-    closeModal: () => void
-}) => {
+const JSONModal = ({ json, isModalOpen, openModal, closeModal }) => {
     return (
-        <Modal open={isModalOpen} onOk={closeModal} onCancel={closeModal} footer={<DownloadJson json={json} />} width={1000}>
+        <Modal
+            open={isModalOpen}
+            onOk={closeModal}
+            onCancel={closeModal}
+            footer={<DownloadJson json={json} />}
+            width={1000}
+        >
             <ReactJson src={json} />
         </Modal>
     )
 }
 
-const DownloadJson = (json: { json: {} | [] }) => {
+const DownloadJson = (json) => {
     const onClick = () => {
         const jsonString = `data:text/json;chatset=utf-8,${encodeURIComponent(JSON.stringify(json, null, 2))}`
         const link = document.createElement('a')
-        const data: { id: string; resourceType: string } = json.json as any
+        const data = json.json
         link.href = jsonString
         link.download = `${data.resourceType}${data.id}.json`
 
