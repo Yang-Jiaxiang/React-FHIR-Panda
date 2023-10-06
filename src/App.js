@@ -23,8 +23,8 @@ function App() {
 
     const initQuerys = {
         HTTP: 'GET',
-        URLHeader: 'https://',
-        serverURL: urlParamsReference ? ReferenceServerURL : 'hapi.fhir.tw/fhir', //'152.38.3.196:10021/fhir',
+        URLHeader: 'http://',
+        serverURL: urlParamsReference ? ReferenceServerURL : '152.38.3.196:10021/fhir',
         resourceType: HistoryResourceType
             ? HistoryResourceType
             : urlParamsReference
@@ -107,8 +107,8 @@ function App() {
                         if (querys.id) data = [{ resource: response.data }]
                         else data = response.data.entry?.length > 0 ? response.data.entry : []
                     }
-                    success()
                     setFetchJson(data)
+                    // success()
                 } catch (e) {
                     error()
                     console.log(e)
@@ -123,7 +123,7 @@ function App() {
                             Authorization: `Bearer ${token}`,
                         },
                     })
-                    success()
+                    // success()
                 } catch (e) {
                     error()
                     console.log(e)
@@ -137,7 +137,7 @@ function App() {
                             Authorization: `Bearer ${token}`,
                         },
                     })
-                    success()
+                    // success()
                 } catch (e) {
                     error()
                     console.log(e)
